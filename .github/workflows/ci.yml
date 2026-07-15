@@ -18,3 +18,26 @@ jobs:
         run: pip install pyspark==3.5.0 pytest
       - name: Run data quality unit tests
         run: pytest tests/ -v
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Databricks CLI
+        run: pip install databricks-cli
+      - name: Configure Databricks CLI
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          echo "[DEFAULT]
+          host = $DATABRICKS_HOST
+          token = $DATABRICKS_TOKEN" > ~/.databrickscfg
+      - name: Sync notebooks to Databricks Workspace
+        run: |
+          databricks workspace import_dir notebooks /Workspace/Users/wendyli19831016@gmail.com/legal-data-lakehouse-ci-deploy --overwrite
