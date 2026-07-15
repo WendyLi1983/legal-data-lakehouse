@@ -2,3 +2,5 @@ raw_landing/
 __pycache__/
 *.pyc
 .pytest_cache/
+pytest_output*.txt
+test_trigger*.txt
